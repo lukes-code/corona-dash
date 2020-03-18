@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Nav from './components/nav';
 import StatsTile from './components/tiles/statsTile';
+import InfoTile from './components/tiles/infoTile';
 import Notice from './components/tiles/notice';
 
 class App extends Component {
@@ -12,12 +13,14 @@ class App extends Component {
         confirmed: 0,
         recovered: 0,
         deaths: 0
-      })
+      }),
+      countries: []
     }
   }
 
   stats = (asycnc) => {
     const base = 'https://covid19.mathdro.id/api';
+    const countries = 'https://covid19.mathdro.id/api/countries';
 
     fetch(base)
       .then(response => response.json())
@@ -34,6 +37,16 @@ class App extends Component {
           })
         })
       });
+
+      fetch(countries)
+      .then(response => response.json())
+      .then(json => {
+        console.log(json)
+        const countries = Object.entries(json.countries);
+        this.setState ({
+          countries: countries
+        })
+      });
   }
 
   componentDidMount(){
@@ -46,13 +59,15 @@ class App extends Component {
 
       return (
         <React.Fragment>
-          <Nav />
+          <Nav 
+            countries={this.state.countries}
+          />
           <main>
             <section className="full">
               <Notice />
             </section>
             <section id="stats">
-              <StatsTile
+              <InfoTile
                 title={"Confirmed Cases"}
                 total={totalStats.confirmed}
                 stats={totalStats.confirmed}
