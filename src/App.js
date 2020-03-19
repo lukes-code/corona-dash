@@ -14,18 +14,24 @@ class App extends Component {
         recovered: 0,
         deaths: 0
       }),
-      countries: []
+      countries: [],
+      query: 'NA',
+      country: ({
+        name: 'Global',
+        confirmed: 0,
+        recovered: 0,
+        deaths: 0,
+      })
     }
   }
 
   stats = (asycnc) => {
     const base = 'https://covid19.mathdro.id/api';
-    const countries = 'https://covid19.mathdro.id/api/countries';
+    const countries = `https://covid19.mathdro.id/api/countries`
 
     fetch(base)
       .then(response => response.json())
       .then(json => {
-        // console.log(json);
         const confirmed = json.confirmed.value;
         const recovered = json.recovered.value;
         const deaths = json.deaths.value;
@@ -34,6 +40,9 @@ class App extends Component {
             confirmed: confirmed,
             recovered: recovered,
             deaths: deaths
+          }),
+          country: ({
+            name: 'Global'
           })
         })
       });
@@ -53,6 +62,38 @@ class App extends Component {
     this.stats();
   }
 
+  updateQuery = (query, country) => {
+    this.setState({ query: query, country: ({ name: country }) });
+    if(query === 'NA'){
+      this.stats();
+    } else {
+      const countries = `https://covid19.mathdro.id/api/countries/${query}`
+
+      fetch(countries)
+      .then(response => response.json())
+      .then(json => {
+        console.log(json);
+        if(json.error !== undefined){
+          this.setState ({
+            total: ({
+              confirmed: 0,
+              recovered: 0,
+              deaths: 0
+            })
+          })
+        } else {
+          this.setState ({
+            total: ({
+              confirmed: json.confirmed.value,
+              recovered: json.recovered.value,
+              deaths: json.deaths.value
+            })
+          })
+        }
+      });
+    }
+  }
+
   render() {
 
     const totalStats = this.state.total;
@@ -61,10 +102,14 @@ class App extends Component {
         <React.Fragment>
           <Nav 
             countries={this.state.countries}
+            query={this.updateQuery}
           />
           <main>
             <section className="full">
               <Notice />
+            </section>
+            <section>
+              <h1>{}</h1>
             </section>
             <section id="stats">
               <InfoTile

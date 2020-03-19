@@ -1,20 +1,27 @@
 import React from "react";
+import uuid from 'react-uuid';
 
 class Select extends React.Component {
 
   handleChange = (e) => {
     const dropdown = document.getElementById('countries');
     const query = dropdown.value;
-    // if(dropdown.value === 'NA') console.log('do nothing');
+    const country = [this.selectedIndex].innerText;
     console.log(`query is ${query}`);
+    this.props.query(query, country);
   }
 
   render(){
 
     let countries = this.props.suggestions.map((country, i) => (
-      <option value={country[1]}>{country[0]}</option>
+      <option 
+        value={country[1]}
+      >
+        {country[0]}
+      </option>
     ));
-    console.log(`countries are ${this.props.suggestions}`);
+
+    // console.log(`countries are ${this.props.suggestions}`);
 
     return (
         <React.Fragment>

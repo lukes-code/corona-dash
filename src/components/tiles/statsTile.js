@@ -7,7 +7,7 @@ class statsTile extends React.Component {
     
     render() {
 
-        const percentage = Math.round(this.props.stats * 100 / this.props.total);
+        let percentage = Math.round(this.props.stats * 100 / this.props.total);
 
         return (
             <section className="statsTile">
