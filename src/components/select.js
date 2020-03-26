@@ -15,9 +15,9 @@ class Select extends React.Component {
 
     let countries = this.props.suggestions.map((country, i) => (
       <option 
-        value={country[1]}
+        value={country[1].iso2}
       >
-        {country[0]}
+        {country[1].name}
       </option>
     ));
 
