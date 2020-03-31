@@ -134,6 +134,18 @@ div#notice-msg {
   flex-wrap: wrap;
 }
 
+img#search-svg {
+  padding-top: 5px;
+}
+
+#color1{
+  background: #6C63FF;
+}
+
+#color2{
+  background: #FBF5F3;
+}
+
 .statsTile {
   flex: 1 1;
   margin: 20px;
@@ -147,8 +159,38 @@ div#notice-msg {
   transition: all .4s ease;
 }
 
-section.statsTile:hover {
+section.statsTile:hover, .smallTileChild:hover{
   box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.2);
+}
+
+.smallTileParent {
+  flex: 1 1;
+  margin: 20px;
+  text-align: center;
+  min-width: 200px;
+  min-height: 150px;
+  border-radius: 7px;
+  display: block;
+  margin-top: 5px;
+}
+
+.smallTileChild {
+  flex: 1 1;
+  text-align: center;
+  background: red;
+  min-width: 200px;
+  min-height: 44%;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: all .4s ease;
+  box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.1);
+}
+
+.smallTileChild p {
+  padding: 36px 10px;
 }
 
 .CircularProgressbar .CircularProgressbar-path{
@@ -171,23 +213,18 @@ select#countries {
   width: 200px;
   height: 40px;
   border: none;
-  background: #6C63FF;
+  background: #FBF5F3;
   border-radius: 7px;
   box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.05);
-  color: #FBF5F3;
+  color: #333;
   padding-left: 15px;
   font-size: 1rem;
   padding-right: 15px;
   transition: all .4s ease;
   cursor: pointer;
-  position: fixed;
-  top: 15px;
-  right: 0%;
-  margin-right: 30px;
 }
 
 select#countries:hover{
-  background: #6C63FF;
   box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.12);
 }
 /*  */

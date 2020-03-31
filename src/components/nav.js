@@ -7,10 +7,6 @@ class Nav extends React.Component {
         return(
             <nav>
                 <img src={Corona} alt="logo" id="nav-logo" />
-                <Select
-                    suggestions={this.props.countries}
-                    query={this.props.query}
-                />
             </nav>
         );
     }

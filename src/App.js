@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import Nav from './components/nav';
 import StatsTile from './components/tiles/statsTile';
 import InfoTile from './components/tiles/infoTile';
+import SearchTile from './components/tiles/searchTile';
 import Notice from './components/tiles/notice';
+import Search from './svg/search.svg';
 
 class App extends Component {
 
@@ -27,6 +29,9 @@ class App extends Component {
 
   stats = (asycnc) => {
     const base = 'https://covid19.mathdro.id/api';
+    const deaths = '/deaths';
+    const confirmed = '/confirmed';
+    const recovered = '/recovered';
     const countries = `https://covid19.mathdro.id/api/countries`
 
     fetch(base)
@@ -47,10 +52,53 @@ class App extends Component {
         })
       });
 
+      //Fetch highest deaths per country
+      fetch(`${base}${deaths}`)
+      .then(response => response.json())
+      .then(json => {
+        let max = [];
+        //Only get 10 highest
+        for (let i = 0; i < 10; i++) {
+            max.push([json[i].countryRegion, json[i].deaths]);
+        }
+        this.setState({
+          highestDeaths: max
+        })
+      });
+
+      //Fetch highest confirmed cases per country
+      fetch(`${base}${confirmed}`)
+      .then(response => response.json())
+      .then(json => {
+        console.log(`confirmed ${json}`);
+        let max = [];
+        //Only get 10 highest
+        for (let i = 0; i < 10; i++) {
+            max.push([json[i].countryRegion, json[i].confirmed]);
+        }
+        this.setState({
+          highestConfirmed: max
+        })
+      });
+
+      //Fetch highest confirmed cases per country
+      fetch(`${base}${recovered}`)
+      .then(response => response.json())
+      .then(json => {
+        console.log(`recovered ${json}`);
+        let max = [];
+        //Only get 10 highest
+        for (let i = 0; i < 10; i++) {
+            max.push([json[i].countryRegion, json[i].recovered]);
+        }
+        this.setState({
+          highestRecovered: max
+        })
+      });
+
       fetch(countries)
       .then(response => response.json())
       .then(json => {
-        console.log(json)
         const countries = Object.entries(json.countries);
         this.setState ({
           countries: countries
@@ -100,10 +148,7 @@ class App extends Component {
 
       return (
         <React.Fragment>
-          <Nav 
-            countries={this.state.countries}
-            query={this.updateQuery}
-          />
+          <Nav />
           <main>
             <section className="full">
               <Notice />
@@ -112,6 +157,17 @@ class App extends Component {
               <h1>{}</h1>
             </section>
             <section id="stats">
+              <div className="smallTileParent">
+                <div className="smallTileChild" id="color2">
+                <img src={Search} alt="search" id="search-svg" />
+                <p>Select your country or origin below</p>
+                </div>
+                <SearchTile 
+                  countries={this.state.countries}
+                  query={this.updateQuery}
+                  color="color1"
+                />
+              </div>
               <InfoTile
                 title={"Confirmed Cases"}
                 total={totalStats.confirmed}
