@@ -271,4 +271,24 @@ section#top-cases {
   box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.1);
   margin-top: 15px;
   padding: 25px;
+  text-align: left;
+}
+
+.casesTile p {
+  margin-top: 3px;
+}
+
+.casesTile h2 {
+  margin: 3px auto;
+}
+
+img#globe-svg {
+  height: 40px;
+  margin: 0;
+}
+
+img#number-svg {
+  height: 40px;
+  margin: 0;
+  padding-bottom: 35px;
 }

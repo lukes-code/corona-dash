@@ -7,6 +7,11 @@ import Notice from './components/tiles/notice';
 import Search from './svg/search.svg';
 import AreaChart from './components/tiles/areaChart';
 import Cases from './components/tiles/cases';
+import One from './svg/one.svg';
+import Two from './svg/two.svg';
+import Three from './svg/three.svg';
+import Four from './svg/four.svg';
+import Five from './svg/five.svg';
 
 class App extends Component {
 
@@ -25,8 +30,38 @@ class App extends Component {
         confirmed: 0,
         recovered: 0,
         deaths: 0,
-      })
+      }),
+      highestConfirmed: ''
     }
+  }
+
+  highestConfirmed = () => {
+    const countries = `https://covid19.mathdro.id/api/countries`;
+    let confirmed = [];
+    let max = [];
+    //Fetch highest confirmed cases per country
+      for (let i = 0; i < this.state.countries.length; i++) {
+        if(this.state.countries[i][1].iso2 != undefined){
+          fetch(`${countries}/${this.state.countries[i][1].iso2}`)
+          .then(response => response.json())
+          .then(json => {
+            // console.log(json);
+            //Only get 10 highest
+              if(json.error != undefined){
+                return;
+              } else {
+                max.push([this.state.countries[i][1].name, json.confirmed.value]);
+                // console.log('max is ' + max);
+              }
+              const topValues = max.sort((a,b) => b[1]-a[1]).slice(0,5);
+              if(i === this.state.countries.length - 1){
+                this.setState({
+                  highestConfirmed: topValues
+                })
+              }
+          });
+        }
+      }
   }
 
   stats = (asycnc) => {
@@ -34,7 +69,7 @@ class App extends Component {
     const deaths = '/deaths';
     const confirmed = '/confirmed';
     const recovered = '/recovered';
-    const countries = `https://covid19.mathdro.id/api/countries`
+    const countries = `https://covid19.mathdro.id/api/countries`;
 
     fetch(base)
       .then(response => response.json())
@@ -54,50 +89,6 @@ class App extends Component {
         })
       });
 
-      //Fetch highest deaths per country
-      fetch(`${base}${deaths}`)
-      .then(response => response.json())
-      .then(json => {
-        let max = [];
-        //Only get 10 highest
-        for (let i = 0; i < 10; i++) {
-            max.push([json[i].countryRegion, json[i].deaths]);
-        }
-        this.setState({
-          highestDeaths: max
-        })
-      });
-
-      //Fetch highest confirmed cases per country
-      fetch(`${base}${confirmed}`)
-      .then(response => response.json())
-      .then(json => {
-        console.log(`confirmed ${json}`);
-        let max = [];
-        //Only get 10 highest
-        for (let i = 0; i < 10; i++) {
-            max.push([json[i].countryRegion, json[i].confirmed]);
-        }
-        this.setState({
-          highestConfirmed: max
-        })
-      });
-
-      //Fetch highest confirmed cases per country
-      fetch(`${base}${recovered}`)
-      .then(response => response.json())
-      .then(json => {
-        console.log(`recovered ${json}`);
-        let max = [];
-        //Only get 10 highest
-        for (let i = 0; i < 10; i++) {
-            max.push([json[i].countryRegion, json[i].recovered]);
-        }
-        this.setState({
-          highestRecovered: max
-        })
-      });
-
       fetch(countries)
       .then(response => response.json())
       .then(json => {
@@ -105,7 +96,8 @@ class App extends Component {
         this.setState ({
           countries: countries
         })
-      });
+        this.highestConfirmed();
+        });
   }
 
   componentDidMount(){
@@ -122,7 +114,7 @@ class App extends Component {
       fetch(countries)
       .then(response => response.json())
       .then(json => {
-        console.log(json);
+        // console.log(json);
         if(json.error !== undefined){
           this.setState ({
             total: ({
@@ -156,7 +148,6 @@ class App extends Component {
               <Notice />
             </section>
             <section>
-              <h1>{}</h1>
             </section>
             <section id="stats">
               <div className="smallTileParent">
@@ -194,15 +185,30 @@ class App extends Component {
                 <Cases 
                   country="false"
                 />
-                <Cases />
+                <Cases 
+                  number={One}
+                  countries={this.state.highestConfirmed[0]}
+                />
               </div>
               <div className="smallTileParent">
-                <Cases />
-                <Cases />
+                <Cases 
+                  number={Two}
+                  countries={this.state.highestConfirmed[1]}
+                />
+                <Cases 
+                  number={Three}
+                  countries={this.state.highestConfirmed[2]}
+                />
               </div>
               <div className="smallTileParent">
-                <Cases />
-                <Cases />
+                <Cases 
+                  number={Four}
+                  countries={this.state.highestConfirmed[3]}
+                />
+                <Cases 
+                  number={Five}
+                  countries={this.state.highestConfirmed[4]}
+                />
               </div>
             </section>
           </main>
