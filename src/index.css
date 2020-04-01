@@ -140,6 +140,7 @@ img#search-svg {
 
 #color1{
   background: #6C63FF;
+  color: #FBF5F3;
 }
 
 #color2{
@@ -159,7 +160,7 @@ img#search-svg {
   transition: all .4s ease;
 }
 
-section.statsTile:hover, .smallTileChild:hover{
+section.statsTile:hover, .smallTileChild:hover, .casesTile:hover{
   box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.2);
 }
 
@@ -231,4 +232,43 @@ select#countries:hover{
 
 .statsTile img {
   max-height: 95px;
+}
+
+#areaTile {
+  flex: 5;
+  margin: 20px;
+  text-align: center;
+  background: #FBF5F3;
+  min-width: 200px;
+  min-width: 56%;
+  max-width: 1200px;
+  min-height: 150px;
+  border-radius: 7px;
+  box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.1);
+  padding: 25px 10px 10px 10px;
+  transition: all .4s ease;
+}
+
+section#areaTile:hover, #areaTile:hover{
+  box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.2);
+}
+
+section#top-cases {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.casesTile {
+  flex: 1 1;
+  text-align: center;
+  min-width: 180px;
+  min-height: 160px;
+  border-radius: 7px;
+  display: inherit;
+  align-items: center;
+  justify-content: center;
+  transition: all .4s ease;
+  box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.1);
+  margin-top: 15px;
+  padding: 25px;
 }

@@ -5,6 +5,8 @@ import InfoTile from './components/tiles/infoTile';
 import SearchTile from './components/tiles/searchTile';
 import Notice from './components/tiles/notice';
 import Search from './svg/search.svg';
+import AreaChart from './components/tiles/areaChart';
+import Cases from './components/tiles/cases';
 
 class App extends Component {
 
@@ -160,7 +162,7 @@ class App extends Component {
               <div className="smallTileParent">
                 <div className="smallTileChild" id="color2">
                 <img src={Search} alt="search" id="search-svg" />
-                <p>Select your country or origin below</p>
+                <p>Select a country below</p>
                 </div>
                 <SearchTile 
                   countries={this.state.countries}
@@ -183,6 +185,25 @@ class App extends Component {
                 total={totalStats.confirmed}
                 stats={totalStats.deaths}
               />
+            </section>
+            <section id="top-cases">
+              <AreaChart 
+                query={this.state.country.name}
+              />
+              <div className="smallTileParent">
+                <Cases 
+                  country="false"
+                />
+                <Cases />
+              </div>
+              <div className="smallTileParent">
+                <Cases />
+                <Cases />
+              </div>
+              <div className="smallTileParent">
+                <Cases />
+                <Cases />
+              </div>
             </section>
           </main>
         </React.Fragment>
