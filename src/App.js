@@ -37,9 +37,10 @@ class App extends Component {
 
   highestConfirmed = () => {
     const countries = `https://covid19.mathdro.id/api/countries`;
-    let confirmed = [];
+    let topValuesOne = [];
     let max = [];
     //Fetch highest confirmed cases per country
+    console.log(this.state.countries.length);
       for (let i = 0; i < this.state.countries.length; i++) {
         if(this.state.countries[i][1].iso2 != undefined){
           fetch(`${countries}/${this.state.countries[i][1].iso2}`)
@@ -53,12 +54,14 @@ class App extends Component {
                 max.push([this.state.countries[i][1].name, json.confirmed.value]);
                 // console.log('max is ' + max);
               }
-              const topValues = max.sort((a,b) => b[1]-a[1]).slice(0,5);
-              if(i === this.state.countries.length - 1){
-                this.setState({
-                  highestConfirmed: topValues
-                })
-              }
+              const topValuesOne = max.sort((a,b) => b[1]-a[1]);
+              // console.log(`first ${topValuesOne}`);
+              const topValuesTwo = max.sort((a,b) => b[1]-a[1]).slice(0,5);
+              console.log(`${i}after ${topValuesTwo}`);
+              console.log('setting state');
+              this.setState({
+                highestConfirmed: topValuesTwo
+              });
           });
         }
       }
