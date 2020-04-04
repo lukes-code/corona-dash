@@ -8,14 +8,12 @@ import Notice from './components/tiles/notice';
 import AreaChart from './components/tiles/areaChart';
 import { Cases } from './components/tiles/cases';
 
-// ICONS
-//      Numbers_SVGS
+
 import One from './svg/one.svg';
 import Two from './svg/two.svg';
 import Three from './svg/three.svg';
 import Four from './svg/four.svg';
 import Five from './svg/five.svg';
-//      SEACH SVG
 import Search from './svg/search.svg';
 
 // new HTTP lib
@@ -63,45 +61,43 @@ class App extends Component {
         return out
       }).filter(w => w.iso2 !== '' && w.name !== '')
 
+      this._countriesPromise(countriesISO)
 
-      this._countriesPromise(countriesISO).then(allRes => {
-        console.log(allRes)
-        const sortedByConfirmed = [...allRes].sort((a,b) => a.confirmed <= b.confirmed ? 1 : -1)
-        const top5Confirmed = this._getTopCollectionValues(sortedByConfirmed, 5)
-        this.setState({
-          highestConfirmed: top5Confirmed
-        });
-      }).catch(error => {
-        debugger
+  }
+
+  callBack = (allRes) => {
+    debugger
+    const sortedByConfirmed = [...allRes].sort((a,b) => a.confirmed <= b.confirmed ? 1 : -1)
+    const top5Confirmed = this._getTopCollectionValues(sortedByConfirmed, 5)
+    this.setState({
+      highestConfirmed: top5Confirmed
+    });
+  }
+
+  addData(countriesList, responses, callBack) {
+    if(Array.isArray(countriesList)) {
+      const _country = countriesList.pop()
+      const url = `${this.countriesUrl}/${_country.iso2}`
+      Axios.get(url).then(axiosResponse => {
+        const { data } = axiosResponse
+        const { confirmed, recovered, deaths } = data
+        const _newData = {..._country, confirmed: confirmed.value, recovered: recovered.value, deaths: deaths.value}
+        responses.push(_newData)
+      }).catch(httpError => {
+        console.dir(httpError)
+      }).finally(() => {
+        if(countriesList.length>0) {
+          this.addData(countriesList, responses, callBack)
+        } else {
+          callBack()
+        }
       })
+    }
   }
 
   _countriesPromise(countriesList) {
     const outCollection = []
-    const axiosPromiseCollection = countriesList.map(_country => Axios.get(`${this.countriesUrl}/${_country.iso2}`)) || []
-    const lastIndex = axiosPromiseCollection.length
-    return new Promise((resolve, reject) => {
-      countriesList.forEach((_country, index) => {
-        Axios.get(`${this.countriesUrl}/${_country.iso2}`).then(apiResponse => {
-          const { data } = apiResponse
-          const { confirmed, recovered, deaths } = data
-          const _newData = {..._country, confirmed: confirmed.value, recovered: recovered.value, deaths: deaths.value}
-          outCollection.push(_newData)
-        }).catch(j => {
-          console.dir(j)
-        }).finally(() => {
-          index++
-          if(index === lastIndex) resolve(outCollection)
-        })
-      })
-    })
-
-
-    /*
-    axiosPromiseCollection.forEach(axPromise=> {
-      axPromise.then(axRes => outCollection.push(axRes)).then(axErr => {})
-    })
-    */
+    this.addData(countriesList, outCollection, () => this.callBack(outCollection))
   }
 
   stats = () => {
