@@ -138,14 +138,15 @@ img#search-svg {
   padding-top: 5px;
 }
 
-#color1{
+.color1 {
   background: #6C63FF;
   color: #FBF5F3;
 }
 
-#color2{
+.color2 {
   background: #FBF5F3;
 }
+
 
 .statsTile {
   flex: 1 1;
@@ -178,7 +179,6 @@ section.statsTile:hover, .smallTileChild:hover, .casesTile:hover{
 .smallTileChild {
   flex: 1 1;
   text-align: center;
-  background: red;
   min-width: 200px;
   min-height: 44%;
   border-radius: 7px;
