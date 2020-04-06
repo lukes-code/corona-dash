@@ -209,8 +209,7 @@ section.statsTile:hover, .smallTileChild:hover, .casesTile:hover{
 }
 
 /* Search */
-
-select#countries {
+select.countries {
   width: 200px;
   height: 40px;
   border: none;
@@ -225,7 +224,7 @@ select#countries {
   cursor: pointer;
 }
 
-select#countries:hover{
+select.countries:hover{
   box-shadow: 1px 1rem 2rem 4px rgba(0,0,0,.12);
 }
 /*  */

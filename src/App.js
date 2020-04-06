@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import Nav from './components/nav';
-import StatsTile from './components/tiles/statsTile';
-import InfoTile from './components/tiles/infoTile';
-import SearchTile from './components/tiles/searchTile';
-import Notice from './components/tiles/notice';
-
+import { StatsTile } from './components/tiles/statsTile';
+import { InfoTile } from './components/tiles/infoTile';
+import { SearchTile } from './components/tiles/searchTile';
+import { Notice } from './components/tiles/notice';
 import AreaChart from './components/tiles/areaChart';
 import { Cases } from './components/tiles/cases';
-
 
 import One from './svg/one.svg';
 import Two from './svg/two.svg';
@@ -19,10 +17,14 @@ import Search from './svg/search.svg';
 // new HTTP lib
 import Axios from 'axios';
 
+export const defaultAppSelection = {
+  value: 'global',
+  name: 'Global'
+}
+
 class App extends Component {
   countriesUrl = `https://covid19.mathdro.id/api/countries`
   base = 'https://covid19.mathdro.id/api'
-
 
   constructor(props) {
     super(props);
@@ -33,9 +35,9 @@ class App extends Component {
         deaths: 0
       }),
       countries: [],
-      query: 'NA',
+      query: defaultAppSelection.value,
       country: ({
-        name: 'Global',
+        name: defaultAppSelection.name,
         confirmed: 0,
         recovered: 0,
         deaths: 0,
@@ -46,127 +48,49 @@ class App extends Component {
 
   _getTopCollectionValues = (Collection, N) => Array.isArray(Collection) ? Collection.slice(0,N) : []
 
-  highestConfirmed = () => {
-    let countriesISO = this.state.countries.map(u => {
-        let iso2 = ''
-        let name = ''
-        let out = { iso2, name }
-        if(Array.isArray(u) && u.length === 2) {
-          let secondNode = u[1]
-          if(secondNode && typeof secondNode.iso2 === 'string' && typeof secondNode.name === 'string') {
-            let { iso2, name } = secondNode
-            out = { iso2, name }
-          }
-        }
-        return out
-      }).filter(w => w.iso2 !== '' && w.name !== '')
 
-      this._countriesPromise(countriesISO)
-
+  proxyServerCall() {
+    Axios.get(`/api/allDocuments`).then(AxiosResponse => {
+      const { data } = AxiosResponse
+      const { countries } = data
+      const sortedByConfirmed = [...countries].sort((a,b) => a.confirmed <= b.confirmed ? 1 : -1)
+      const highestConfirmed = this._getTopCollectionValues(sortedByConfirmed, 5)
+      this.setState({ countries, highestConfirmed })
+    }).catch(AxiosHttpError => {
+      console.dir(AxiosHttpError)
+    })
   }
 
-  callBack = (allRes) => {
-    debugger
-    const sortedByConfirmed = [...allRes].sort((a,b) => a.confirmed <= b.confirmed ? 1 : -1)
-    const top5Confirmed = this._getTopCollectionValues(sortedByConfirmed, 5)
-    this.setState({
-      highestConfirmed: top5Confirmed
-    });
-  }
-
-  addData(countriesList, responses, callBack) {
-    if(Array.isArray(countriesList)) {
-      const _country = countriesList.pop()
-      const url = `${this.countriesUrl}/${_country.iso2}`
-      Axios.get(url).then(axiosResponse => {
-        const { data } = axiosResponse
-        const { confirmed, recovered, deaths } = data
-        const _newData = {..._country, confirmed: confirmed.value, recovered: recovered.value, deaths: deaths.value}
-        responses.push(_newData)
-      }).catch(httpError => {
-        console.dir(httpError)
-      }).finally(() => {
-        if(countriesList.length>0) {
-          this.addData(countriesList, responses, callBack)
-        } else {
-          callBack()
-        }
-      })
-    }
-  }
-
-  _countriesPromise(countriesList) {
-    const outCollection = []
-    this.addData(countriesList, outCollection, () => this.callBack(outCollection))
-  }
-
-  stats = () => {
-    const deaths = '/deaths';
-    const confirmed = '/confirmed';
-    const recovered = '/recovered';
-
-    fetch(this.base)
-      .then(response => response.json())
-      .then(json => {
-        const confirmed = json.confirmed.value;
-        const recovered = json.recovered.value;
-        const deaths = json.deaths.value;
-        this.setState ({
-          total: ({
-            confirmed: confirmed,
-            recovered: recovered,
-            deaths: deaths
-          }),
-          country: ({
-            name: 'Global'
-          })
-        })
-      });
-
-      fetch(this.countriesUrl)
-      .then(response => response.json())
-      .then(json => {
-        const countries = Object.entries(json.countries);
-        this.setState ({
-          countries: countries
-        })
-        this.highestConfirmed();
-        });
-  }
 
   componentDidMount(){
-    this.stats();
+    this.proxyServerCall()
   }
 
   updateQuery = (query, country) => {
     this.setState({ query: query, country: ({ name: country }) });
-    if(query === 'NA'){
-      this.stats();
+    if(query === defaultAppSelection.value) {
+      // do we really need to do this each time?
+      this.proxyServerCall()
     } else {
-      const countries = `https://covid19.mathdro.id/api/countries/${query}`
-
-      fetch(countries)
-      .then(response => response.json())
-      .then(json => {
-        // console.log(json);
-        if(json.error !== undefined){
-          this.setState ({
-            total: ({
-              confirmed: 0,
-              recovered: 0,
-              deaths: 0
-            })
+      const countryDataApi = `https://covid19.mathdro.id/api/countries/${query}`
+      Axios.get(countryDataApi).then(apiResponse => {
+        const { data } = apiResponse
+        this.setState ({
+          total: ({
+            confirmed: data.confirmed.value,
+            recovered: data.recovered.value,
+            deaths: data.deaths.value
           })
-        } else {
-          this.setState ({
-            total: ({
-              confirmed: json.confirmed.value,
-              recovered: json.recovered.value,
-              deaths: json.deaths.value
-            })
+        })
+      }).catch(apiError => {
+        this.setState ({
+          total: ({
+            confirmed: 0,
+            recovered: 0,
+            deaths: 0
           })
-        }
-      });
+        })
+      })
     }
   }
 
@@ -178,47 +102,25 @@ class App extends Component {
       return (<>
         <Nav />
           <main>
-            
             <section className="full">
               <Notice />
             </section>
-            
             <section>
             </section>
-
             <section id="stats">
               <div className="smallTileParent">
                 <div className="smallTileChild color2">
                 <img src={Search} alt="search" id="search-svg" />
                 <p>Select a country below</p>
                 </div>
-                <SearchTile 
-                  countries={this.state.countries}
-                  query={this.updateQuery}
-                  color="color1"
-                />
+                <SearchTile countries={this.state.countries} query={this.updateQuery} color="color1"/>
               </div>
-              <InfoTile
-                title={"Confirmed Cases"}
-                total={totalStats.confirmed}
-                stats={totalStats.confirmed}
-              />
-              <StatsTile
-                title={"Recovered"}
-                total={totalStats.confirmed}
-                stats={totalStats.recovered}
-              />
-              <StatsTile
-                title={"Deaths"}
-                total={totalStats.confirmed}
-                stats={totalStats.deaths}
-              />
+              <InfoTile title={"Confirmed Cases"} stats={totalStats.confirmed} />
+              <StatsTile title={"Recovered"} total={totalStats.confirmed} stats={totalStats.recovered} />
+              <StatsTile title={"Deaths"} total={totalStats.confirmed} stats={totalStats.deaths} />
             </section>
-           
             <section id="top-cases">
-              
               <AreaChart query={countryName} />
-
               <div className="smallTileParent">
                 <Cases isCardLabel={true}/>
                 <Cases number={One} countryData={this.state.highestConfirmed[0]}/>
