@@ -1,6 +1,5 @@
 import React from 'react';
-import Select from './select';
-import Corona from '../svg/corona.svg';
+import Corona from './../svg/corona.svg';
 
 class Nav extends React.Component {
     render() {
