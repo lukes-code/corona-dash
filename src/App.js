@@ -4,16 +4,27 @@ import StatsTile from './components/tiles/statsTile';
 import InfoTile from './components/tiles/infoTile';
 import SearchTile from './components/tiles/searchTile';
 import Notice from './components/tiles/notice';
-import Search from './svg/search.svg';
+
 import AreaChart from './components/tiles/areaChart';
-import Cases from './components/tiles/cases';
+import { Cases } from './components/tiles/cases';
+
+// ICONS
+//      Numbers_SVGS
 import One from './svg/one.svg';
 import Two from './svg/two.svg';
 import Three from './svg/three.svg';
 import Four from './svg/four.svg';
 import Five from './svg/five.svg';
+//      SEACH SVG
+import Search from './svg/search.svg';
+
+// new HTTP lib
+import Axios from 'axios';
 
 class App extends Component {
+  countriesUrl = `https://covid19.mathdro.id/api/countries`
+  base = 'https://covid19.mathdro.id/api'
+
 
   constructor(props) {
     super(props);
@@ -31,50 +42,74 @@ class App extends Component {
         recovered: 0,
         deaths: 0,
       }),
-      highestConfirmed: ''
+      highestConfirmed: []
     }
   }
 
+  _getTopCollectionValues = (Collection, N) => Array.isArray(Collection) ? Collection.slice(0,N) : []
+
   highestConfirmed = () => {
-    const countries = `https://covid19.mathdro.id/api/countries`;
-    let topValuesOne = [];
-    let max = [];
-    //Fetch highest confirmed cases per country
-    console.log(this.state.countries.length);
-      for (let i = 0; i < this.state.countries.length; i++) {
-        if(this.state.countries[i][1].iso2 != undefined){
-          fetch(`${countries}/${this.state.countries[i][1].iso2}`)
-          .then(response => response.json())
-          .then(json => {
-            // console.log(json);
-            //Only get 10 highest
-              if(json.error != undefined){
-                return;
-              } else {
-                max.push([this.state.countries[i][1].name, json.confirmed.value]);
-                // console.log('max is ' + max);
-              }
-              const topValuesOne = max.sort((a,b) => b[1]-a[1]);
-              // console.log(`first ${topValuesOne}`);
-              const topValuesTwo = max.sort((a,b) => b[1]-a[1]).slice(0,5);
-              console.log(`${i}after ${topValuesTwo}`);
-              console.log('setting state');
-              this.setState({
-                highestConfirmed: topValuesTwo
-              });
-          });
+    let countriesISO = this.state.countries.map(u => {
+        let iso2 = ''
+        let name = ''
+        let out = { iso2, name }
+        if(Array.isArray(u) && u.length === 2) {
+          let secondNode = u[1]
+          if(secondNode && typeof secondNode.iso2 === 'string' && typeof secondNode.name === 'string') {
+            let { iso2, name } = secondNode
+            out = { iso2, name }
+          }
         }
-      }
+        return out
+      }).filter(w => w.iso2 !== '' && w.name !== '')
+
+
+      this._countriesPromise(countriesISO).then(allRes => {
+        console.log(allRes)
+        const sortedByConfirmed = [...allRes].sort((a,b) => a.confirmed <= b.confirmed ? 1 : -1)
+        const top5Confirmed = this._getTopCollectionValues(sortedByConfirmed, 5)
+        this.setState({
+          highestConfirmed: top5Confirmed
+        });
+      }).catch(error => {
+        debugger
+      })
   }
 
-  stats = (asycnc) => {
-    const base = 'https://covid19.mathdro.id/api';
+  _countriesPromise(countriesList) {
+    const outCollection = []
+    const axiosPromiseCollection = countriesList.map(_country => Axios.get(`${this.countriesUrl}/${_country.iso2}`)) || []
+    const lastIndex = axiosPromiseCollection.length
+    return new Promise((resolve, reject) => {
+      countriesList.forEach((_country, index) => {
+        Axios.get(`${this.countriesUrl}/${_country.iso2}`).then(apiResponse => {
+          const { data } = apiResponse
+          const { confirmed, recovered, deaths } = data
+          const _newData = {..._country, confirmed: confirmed.value, recovered: recovered.value, deaths: deaths.value}
+          outCollection.push(_newData)
+        }).catch(j => {
+          console.dir(j)
+        }).finally(() => {
+          index++
+          if(index === lastIndex) resolve(outCollection)
+        })
+      })
+    })
+
+
+    /*
+    axiosPromiseCollection.forEach(axPromise=> {
+      axPromise.then(axRes => outCollection.push(axRes)).then(axErr => {})
+    })
+    */
+  }
+
+  stats = () => {
     const deaths = '/deaths';
     const confirmed = '/confirmed';
     const recovered = '/recovered';
-    const countries = `https://covid19.mathdro.id/api/countries`;
 
-    fetch(base)
+    fetch(this.base)
       .then(response => response.json())
       .then(json => {
         const confirmed = json.confirmed.value;
@@ -92,7 +127,7 @@ class App extends Component {
         })
       });
 
-      fetch(countries)
+      fetch(this.countriesUrl)
       .then(response => response.json())
       .then(json => {
         const countries = Object.entries(json.countries);
@@ -141,20 +176,23 @@ class App extends Component {
 
   render() {
 
-    const totalStats = this.state.total;
+    const totalStats = this.state.total
+    const countryName = this.state.country.name
 
-      return (
-        <React.Fragment>
-          <Nav />
+      return (<>
+        <Nav />
           <main>
+            
             <section className="full">
               <Notice />
             </section>
+            
             <section>
             </section>
+
             <section id="stats">
               <div className="smallTileParent">
-                <div className="smallTileChild" id="color2">
+                <div className="smallTileChild color2">
                 <img src={Search} alt="search" id="search-svg" />
                 <p>Select a country below</p>
                 </div>
@@ -180,43 +218,26 @@ class App extends Component {
                 stats={totalStats.deaths}
               />
             </section>
+           
             <section id="top-cases">
-              <AreaChart 
-                query={this.state.country.name}
-              />
+              
+              <AreaChart query={countryName} />
+
               <div className="smallTileParent">
-                <Cases 
-                  country="false"
-                />
-                <Cases 
-                  number={One}
-                  countries={this.state.highestConfirmed[0]}
-                />
+                <Cases isCardLabel={true}/>
+                <Cases number={One} countryData={this.state.highestConfirmed[0]}/>
               </div>
               <div className="smallTileParent">
-                <Cases 
-                  number={Two}
-                  countries={this.state.highestConfirmed[1]}
-                />
-                <Cases 
-                  number={Three}
-                  countries={this.state.highestConfirmed[2]}
-                />
+                <Cases number={Two} countryData={this.state.highestConfirmed[1]} />
+                <Cases number={Three} countryData={this.state.highestConfirmed[2]} />
               </div>
               <div className="smallTileParent">
-                <Cases 
-                  number={Four}
-                  countries={this.state.highestConfirmed[3]}
-                />
-                <Cases 
-                  number={Five}
-                  countries={this.state.highestConfirmed[4]}
-                />
+                <Cases number={Four} countryData={this.state.highestConfirmed[3]} />
+                <Cases number={Five} countryData={this.state.highestConfirmed[4]} />
               </div>
             </section>
           </main>
-        </React.Fragment>
-      );
+      </>);
     }
 }
 export default App;

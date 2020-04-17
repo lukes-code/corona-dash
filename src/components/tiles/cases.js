@@ -1,55 +1,46 @@
 import React from 'react';
 import Globe from '../../svg/globe.svg';
 
-class Cases extends React.Component{
+import { NumberUtil } from './../../util/numbers'
 
-    state = {
-        country: true,
+// this is a react functional component, with no state
+export const Cases = (props) => {
+
+    const { isCardLabel, countryData, number } = props;
+    let name = ''
+    let confirmed = 0
+    let renderCase = false
+    if(countryData && typeof countryData.confirmed === 'number' && countryData.name) {
+        name = countryData.name
+        confirmed = countryData.confirmed
+        renderCase = true
     }
 
-    componentDidMount(){
-        if(!this.props.country){
-            this.setState({ country: true })
-         } else{
-            this.setState({ country: false })
-         }
-         if(!this.props.country){
-            this.setState({ country: true })
-         } else{
-            this.setState({ country: false })
-         }
-         console.log(this.props.countries);
-    }
-
-    render() {
-        if(!this.state.country){
+    if(isCardLabel === true) {
+        return(
+            <div className="casesTile color1">
+                <img src={Globe} alt="globe" id="globe-svg" />
+                <h2>Top 5 <br/>Countries</h2>
+                <p>For confirmed cases</p>
+            </div>
+        );
+    } else if(renderCase) {
+        return(
+            <div className="casesTile color2">
+                <img src={number} alt="number" id="number-svg" />
+                <h2>{name}</h2>
+                <p>{NumberUtil.toCommaDelim(confirmed, 0)}</p>
+            </div>
+        );
+    } else if(countryData === undefined) {
             return(
-                <div className="casesTile" id="color1">
-                    <img src={Globe} alt="globe" id="globe-svg" />
-                    <h2>Top 5 <br/>Countries</h2>
-                    <p>For confirmed cases</p>
-                </div>
+                <div className="casesTile  color2">
+                <img src={number} alt="number" id="number-svg" />
+                <h2>Loading</h2>
+                <p>Data</p>
+            </div>
             );
-        } else {
-            if(this.props.countries != undefined){
-            return(
-                <div className="casesTile" id="color2">
-                    <img src={this.props.number} alt="number" id="number-svg" />
-                    <h2>{this.props.countries[0]}</h2>
-                    <p>{this.props.countries[1]}</p>
-                </div>
-            );
-            } else {
-                return(
-                    <div className="casesTile" id="color2">
-                    <img src={this.props.number} alt="number" id="number-svg" />
-                    <h2>Loading</h2>
-                    <p>Data</p>
-                </div>
-                );
-            }
-        }
+    } else {
+        return null
     }
 }
-
-export default Cases;
