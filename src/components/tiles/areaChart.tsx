@@ -1,8 +1,38 @@
 import React from 'react';
 import Chart from "react-apexcharts";
 
-class AreaChart extends React.Component {
-    constructor(props) {
+type AreaProps = {
+  query: string;
+}
+
+type AreaState = {
+  series: Object[];
+  options: {
+    chart: {
+      height: number;
+      type: string;
+    },
+    dataLabels: {
+      enabled: boolean;
+    },
+    colors: string[];
+    stroke: {
+      curve: string;
+    },
+    xaxis: {
+      type: string;
+      categories: Object[];
+    },
+    tooltip: {
+      x: {
+        format: string;
+      }
+    }
+  },
+}
+
+class AreaChart extends React.Component<AreaProps, AreaState> {
+    constructor(props: AreaProps) {
       super(props);
 
       this.state = {

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import Nav from './components/nav';
 import StatsTile from './components/tiles/statsTile';
 import InfoTile from './components/tiles/infoTile';
@@ -13,9 +13,32 @@ import Three from './svg/three.svg';
 import Four from './svg/four.svg';
 import Five from './svg/five.svg';
 
-class App extends Component {
+type AppProps = {
+  //Props
+  countriesList: Object[];
+}
 
-  constructor(props) {
+type AppState = {
+  total: {
+    confirmed: number;
+    recovered: number;
+    deaths: number;
+  },
+  countries: any;
+  query: string;
+  country: {
+    name: string;
+    confirmed?: number;
+    recovered?: number;
+    deaths?: number;
+  },
+  highestConfirmed: Object[];
+}
+
+
+class App extends Component<AppProps, AppState> {
+
+  constructor(props: AppProps) {
     super(props);
     this.state = {
       total: ({
@@ -31,55 +54,50 @@ class App extends Component {
         recovered: 0,
         deaths: 0,
       }),
-      highestConfirmed: ''
+      highestConfirmed: []
     }
   }
 
-  highestConfirmed = () => {
-    const countries = `https://covid19.mathdro.id/api/countries`;
-    let topValuesOne = [];
-    let max = [];
+  highestConfirmed = async () => {
+    const countryQuery: string = `https://covid19.mathdro.id/api/countries`;
+    let max: any[][] = [];
+    const countries: Object = this.state.countries;
     //Fetch highest confirmed cases per country
-    console.log(this.state.countries.length);
       for (let i = 0; i < this.state.countries.length; i++) {
         if(this.state.countries[i][1].iso2 != undefined){
-          fetch(`${countries}/${this.state.countries[i][1].iso2}`)
+          await fetch(`${countryQuery}/${this.state.countries[i][1].iso2}`)
           .then(response => response.json())
           .then(json => {
-            // console.log(json);
-            //Only get 10 highest
               if(json.error != undefined){
                 return;
               } else {
                 max.push([this.state.countries[i][1].name, json.confirmed.value]);
-                // console.log('max is ' + max);
               }
-              const topValuesOne = max.sort((a,b) => b[1]-a[1]);
-              // console.log(`first ${topValuesOne}`);
-              const topValuesTwo = max.sort((a,b) => b[1]-a[1]).slice(0,5);
-              console.log(`${i}after ${topValuesTwo}`);
-              console.log('setting state');
-              this.setState({
-                highestConfirmed: topValuesTwo
-              });
+              console.log(max);
+              const topValuesTwo: any = max.sort((a,b) => b[1]-a[1]).slice(0,5);
+              if(i === this.state.countries.length - 1){
+                this.setState({
+                  highestConfirmed: topValuesTwo
+                });
+              }
           });
         }
       }
   }
 
-  stats = (asycnc) => {
-    const base = 'https://covid19.mathdro.id/api';
-    const deaths = '/deaths';
-    const confirmed = '/confirmed';
-    const recovered = '/recovered';
-    const countries = `https://covid19.mathdro.id/api/countries`;
+  stats = (asycnc?:any) => {
+    const base: string = 'https://covid19.mathdro.id/api';
+    const deaths: string = '/deaths';
+    const confirmed: string = '/confirmed';
+    const recovered: string = '/recovered';
+    const countries: string = `https://covid19.mathdro.id/api/countries`;
 
     fetch(base)
       .then(response => response.json())
       .then(json => {
-        const confirmed = json.confirmed.value;
-        const recovered = json.recovered.value;
-        const deaths = json.deaths.value;
+        const confirmed: number = json.confirmed.value;
+        const recovered: number = json.recovered.value;
+        const deaths: number = json.deaths.value;
         this.setState ({
           total: ({
             confirmed: confirmed,
@@ -95,7 +113,7 @@ class App extends Component {
       fetch(countries)
       .then(response => response.json())
       .then(json => {
-        const countries = Object.entries(json.countries);
+        const countries: Object[] = Object.entries(json.countries);
         this.setState ({
           countries: countries
         })
@@ -107,12 +125,12 @@ class App extends Component {
     this.stats();
   }
 
-  updateQuery = (query, country) => {
+  updateQuery = (query: string, country: string) => {
     this.setState({ query: query, country: ({ name: country }) });
     if(query === 'NA'){
       this.stats();
     } else {
-      const countries = `https://covid19.mathdro.id/api/countries/${query}`
+      const countries: string = `https://covid19.mathdro.id/api/countries/${query}`
 
       fetch(countries)
       .then(response => response.json())
@@ -141,7 +159,7 @@ class App extends Component {
 
   render() {
 
-    const totalStats = this.state.total;
+    const totalStats: {confirmed: number, recovered: number, deaths: number} = this.state.total;
 
       return (
         <React.Fragment>
@@ -159,7 +177,7 @@ class App extends Component {
                 <p>Select a country below</p>
                 </div>
                 <SearchTile 
-                  countries={this.state.countries}
+                  countriesList={this.state.countries}
                   query={this.updateQuery}
                   color="color1"
                 />
@@ -186,30 +204,35 @@ class App extends Component {
               />
               <div className="smallTileParent">
                 <Cases 
-                  country="false"
+                  country={false}
                 />
                 <Cases 
-                  number={One}
+                  country={true}
+                  numbering={One}
                   countries={this.state.highestConfirmed[0]}
                 />
               </div>
               <div className="smallTileParent">
                 <Cases 
-                  number={Two}
+                  country={true}
+                  numbering={Two}
                   countries={this.state.highestConfirmed[1]}
                 />
                 <Cases 
-                  number={Three}
+                  country={true}
+                  numbering={Three}
                   countries={this.state.highestConfirmed[2]}
                 />
               </div>
               <div className="smallTileParent">
                 <Cases 
-                  number={Four}
+                  country={true}
+                  numbering={Four}
                   countries={this.state.highestConfirmed[3]}
                 />
                 <Cases 
-                  number={Five}
+                  country={true}
+                  numbering={Five}
                   countries={this.state.highestConfirmed[4]}
                 />
               </div>

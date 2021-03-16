@@ -2,12 +2,17 @@ import React from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
+type StatsType = {
+    stats: number;
+    total: number;
+    title: string;
+}
 
-class statsTile extends React.Component {
+class statsTile extends React.Component<StatsType> {
     
     render() {
 
-        let percentage = Math.round(this.props.stats * 100 / this.props.total);
+        let percentage: number = Math.round(this.props.stats * 100 / this.props.total);
 
         return (
             <section className="statsTile">
